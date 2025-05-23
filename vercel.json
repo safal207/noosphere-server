@@ -1,9 +1,0 @@
-{
-  "version": 2,
-  "builds": [
-    { "src": "index.js", "use": "@vercel/node" }
-  ],
-  "routes": [
-    { "src": "/submit", "methods": ["POST"], "dest": "/index.js" }
-  ]
-}
