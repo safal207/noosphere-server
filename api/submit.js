@@ -5,7 +5,7 @@ module.exports = async (req, res) => {
     return res.status(405).send('Only POST allowed');
   }
 
-  const TELEGRAM_TOKEN = '8197581773:AAFTpr4DiNbv4fjAnwfTrGagVJYjzIU_tVk';
+  const TELEGRAM_TOKEN = 'твой_токен';
   const CHAT_ID = '501665369';
 
   const { name, contact, message } = req.body;
