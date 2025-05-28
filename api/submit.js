@@ -1,31 +1,33 @@
-// api/submit.js
-import axios from 'axios';
-
-require('dotenv').config();  // ← подтянет переменные из .env.local
-
-const TELEGRAM_TOKEN = process.env.TG_TOKEN;
-const CHAT_ID         = process.env.CHAT_ID;
+// file: api/submit.js
+import fetch from 'node-fetch';  // если у вас Node.js 20+, можно использовать глобальный fetch
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ ok: false, error: 'Method Not Allowed' });
+    res.status(405).send('Only POST allowed');
+    return;
   }
 
   const { name, contact, message } = req.body;
-  const text = `🔥 Новый отклик из Noosphere City:\n\n👤 Имя: ${name}\n✉️ Контакт: ${contact}\n💬 Сообщение: ${message}`;
+  const text = `🔥 Новый отклик из Noosphere City:%0A%0A`
+             + `👤 Имя: ${name}%0A`
+             + `✉️ Контакт: ${contact}%0A`
+             + `💬 Сообщение: ${message}`;
+
+  // Читаем секреты из ENV
+  const token  = process.env.TG_TOKEN;
+  const chatId = process.env.CHAT_ID;
+
+  if (!token || !chatId) {
+    console.error('Missing TG_TOKEN or CHAT_ID in environment');
+    res.status(500).send('Server misconfiguration');
+    return;
+  }
 
   try {
-    const response = await axios.post(
-      `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`,
-      { chat_id: CHAT_ID, text }
-    );
-    if (response.data.ok) {
-      return res.status(200).json({ ok: true });
-    } else {
-      throw new Error('Telegram API returned error');
-    }
+    await fetch(`https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${text}`);
+    res.status(200).send('OK');
   } catch (err) {
-    console.error('Telegram send error:', err);
-    return res.status(500).json({ ok: false, error: err.message });
+    console.error('Telegram error:', err);
+    res.status(502).send('Telegram failed');
   }
 }
